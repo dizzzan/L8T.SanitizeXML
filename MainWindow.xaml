@@ -3,27 +3,39 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:Microsoft_Windows_Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero" 
+
         xmlns:self="clr-namespace:L8T.SanitizeXML"
 
         xmlns:local="clr-namespace:SanitizeXML"
         mc:Ignorable="d"
         Title="L8T XML Sanitizer" Height="800" Width="1000">
-   
+    <Window.Resources>
+        <Style x:Key="{x:Static ToolBar.ButtonStyleKey}" TargetType="{x:Type Button}">
+            <Setter Property="Background" Value="LightGray"/>
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="BorderBrush" Value="DarkSlateGray"/>
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="Padding" Value="4"/>
+        </Style>
+    </Window.Resources>
+    
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="5" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="100" />
+            <RowDefinition Height="9*" />
+            <RowDefinition Height="1*" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="4*" />
             <ColumnDefinition Width="5" />
-            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="4*" />
+            <ColumnDefinition Width="5" />
+            <ColumnDefinition Width="1*" />
         </Grid.ColumnDefinitions>
-        <DockPanel Grid.ColumnSpan="3">
-            <ToolBarTray DockPanel.Dock="Top" IsLocked="True" AllowDrop="False">
-                <ToolBar>
+        <DockPanel Grid.ColumnSpan="5">
+            <ToolBarTray DockPanel.Dock="Top" IsLocked="True">
+                <ToolBar FontSize="20">
                     <Button Content="Open" Click="Open_Click" />
                     <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" />
                     <Button Content="Lint" Click="Lint_Click" />
@@ -35,11 +47,10 @@
             </ToolBarTray>
         </DockPanel>
         <avalonEdit:TextEditor 
-            
             xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
             Name="raw"
             Grid.Column="0"
-            Grid.Row="2"
+            Grid.Row="1"
             FontFamily="Consolas"
             SyntaxHighlighting="XML"
             FontSize="10pt"
@@ -47,17 +58,17 @@
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"
            />
-        
-        
+
         <GridSplitter Grid.Column="1"
-                      Grid.Row="2"
+                      Grid.Row="1"
                       Width="5" 
-                      HorizontalAlignment="Stretch" />
-        
+                      HorizontalAlignment="Stretch" 
+                      Background="DarkGray" />
+
         <avalonEdit:TextEditor 
             xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
             Name="clean"
-            Grid.Row="2"
+            Grid.Row="1"
             Grid.Column="2"
             IsReadOnly="True"
             FontFamily="Consolas"
@@ -67,9 +78,69 @@
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"
            />
+
+        <GridSplitter Grid.Column="3"
+                      Grid.Row="1"
+                      Width="5" 
+                      HorizontalAlignment="Stretch"
+                      Background="DarkGray" />
+        <Grid Grid.Row="1" Grid.Column="4">
+            
+            <Grid.RowDefinitions>
+                <RowDefinition Height="1*" />
+                <RowDefinition Height="1*" />
+                <RowDefinition Height="1*" />
+            </Grid.RowDefinitions>
+            
+                <DataGrid Grid.Column="0" Grid.Row="0" ItemsSource="{Binding Elements}"
+                   HorizontalAlignment="Stretch"
+                   VerticalAlignment="Stretch"
+                          CanUserAddRows="True"
+                          CanUserDeleteRows="True"
+                          AutoGenerateColumns="False">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn 
+                                Binding="{Binding Value}"
+                                Foreground="Black" Width="*" 
+                                Header="Elements" IsReadOnly="false" />
+                    </DataGrid.Columns>
+                </DataGrid>
+
+            <DataGrid Grid.Column="0" Grid.Row="1" ItemsSource="{Binding Attributes}"
+                   HorizontalAlignment="Stretch"
+                   VerticalAlignment="Stretch"
+                          CanUserAddRows="True"
+                          CanUserDeleteRows="True"
+                      AutoGenerateColumns="False">
+                <DataGrid.Columns>
+                    <DataGridTextColumn 
+                                Binding="{Binding Value}"
+                                Foreground="Black" Width="*" 
+                                Header="Attributes" IsReadOnly="false" />
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <DataGrid Grid.Column="0" Grid.Row="2" ItemsSource="{Binding Values}"
+                   HorizontalAlignment="Stretch"
+                   VerticalAlignment="Stretch"
+                          CanUserAddRows="True"
+                          CanUserDeleteRows="True"
+                      AutoGenerateColumns="False">
+                <DataGrid.Columns>
+                    <DataGridTextColumn 
+                                Binding="{Binding Value}"
+                                Foreground="Black" Width="*" 
+                                Header="Values" IsReadOnly="false" />
+                </DataGrid.Columns>
+            </DataGrid>
+
+
+
+        </Grid>
+
         <TextBlock Name="status"
                    TextWrapping="Wrap"
-                   Grid.ColumnSpan="3" Grid.Row="3"
+                   Grid.ColumnSpan="3" Grid.Row="2"
                    HorizontalAlignment="Stretch"
                    VerticalAlignment="Stretch"
                    Padding="10"

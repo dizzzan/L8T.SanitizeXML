@@ -1,7 +1,9 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -31,20 +33,33 @@ namespace L8T.SanitizeXML
 
         }
 
-        private List<string> BadElements = new List<string>
-        {
-             "LastModifiedTime", "LastModifiedBy", "*ID", "*Status"
-        };
-
         private void Open_Click(object sender, RoutedEventArgs e)
         {
-            var text = File.ReadAllText(@"C:\Users\dan\Downloads\test.xml");
-            ((TextProcessor)DataContext).InputText = text;
-            raw.Text = text;
+            var dialog = new OpenFileDialog { Filter = "XML Files (*.xml)|*.xml" };
+            if (dialog.ShowDialog() == true)
+            {
+                var text = File.ReadAllText(dialog.FileName);
+             
+                ((TextProcessor)DataContext).InputText = text;
+                raw.Text = text;
+            }
         }
 
         private void SaveAs_Click(object sender, RoutedEventArgs e)
         {
+            var dialog = new SaveFileDialog { AddExtension = true, DefaultExt = ".xml", Filter = "XML Files (*.xml)|*.xml" };
+            if (dialog.ShowDialog() == true)
+            {
+                try
+                {
+                    File.WriteAllText(dialog.FileName, clean.Text);
+                }
+                catch (Exception ex)
+                {
+                    status.Text = ex.Message;
+                }
+
+            }
 
         }
 
@@ -71,27 +86,37 @@ namespace L8T.SanitizeXML
 
                 var doc = XDocument.Parse(raw.Text);
 
-                foreach (var el in BadElements)
+                foreach (var el in ((TextProcessor)DataContext).Elements)
                 {
                     string elS = null;
-                    if (el.Contains("*"))
+                    if (el.Value.Contains("*"))
                     {
-                        elS = el.Replace("*", "");
+                        elS = el.Value.Replace("*", "");
 
-                        if (el.EndsWith("*"))
+                        if (el.Value.EndsWith("*"))
                         {
                             doc.Descendants().Where(x => x.Name.LocalName.StartsWith(elS)).Remove();
                         }
-                        if (el.StartsWith("*"))
+                        if (el.Value.StartsWith("*"))
                         {
                             doc.Descendants().Where(x => x.Name.LocalName.EndsWith(elS)).Remove();
                         }
                     }
                     else
                     {
-                        doc.Descendants(el).Remove();
+                        doc.Descendants(el.Value).Remove();
                     }
                 }
+                foreach (var el in doc.Descendants().Where(x => x.Attributes().Any(a => ((TextProcessor)DataContext).Attributes.Select(x =>x.Value).Contains(a.Name.ToString()))))
+                {
+                    el.Attributes().Where(x => ((TextProcessor)DataContext).Attributes.Select(x => x.Value).Contains(x.Name.ToString())).Remove();
+                }
+
+                foreach (var value in ((TextProcessor)DataContext).Values.Select(x => x.Value))
+                {
+                    doc.Descendants().Where(x => x.Value == value).Remove();
+                }
+
 
                 clean.Text = doc.ToString();
             }
@@ -109,6 +134,15 @@ namespace L8T.SanitizeXML
     {
         public string InputText { get; set; }
         public string OutputText { get; set; }
+
+        public List<Text> Elements { get; set; } = new List<Text> { new Text { Value = "*ID" }, new Text { Value = "*Status" } };
+        public List<Text> Attributes { get; set; } = new List<Text> { new Text { Value = "product-version" }, new Text { Value = "platform-version" } };
+        public List<Text> Values { get; set; } = new List<Text>();
     }
 
+
+    public class Text
+    {
+        public string Value { get; set; }
+    }
 }
